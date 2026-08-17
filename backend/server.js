@@ -108,14 +108,12 @@ app.get('/tasks/:userId', async (req, res) => {
 });
 
 // Get Single Task by ID
+// Get Single Task by ID
 app.get('/task/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [tasks] = await pool.query(
-      'SELECT id, user_id, title, description, DATE_FORMAT(due_date, "%Y-%m-%d") AS due_date, priority, status FROM tasks WHERE id = ?',
-      [id]
-    );
+    const [tasks] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
 
     if (tasks.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
@@ -124,10 +122,9 @@ app.get('/task/:id', async (req, res) => {
     res.json(tasks[0]);
   } catch (error) {
     console.error('Fetch single task error:', error);
-    res.status(500).json({ message: 'Failed to retrieve task' });
+    res.status(500).json({ message: 'Failed to retrieve task', error: error.message });
   }
 });
-
 // Add New Task
 app.post('/add-task', async (req, res) => {
   const { user_id, title, description, due_date, priority, status } = req.body;
