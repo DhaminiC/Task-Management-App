@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Task | TaskFlow</title>
+
+    <link rel="stylesheet" href="dashboard.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+<div class="main">
+
+    <div class="table-section">
+
+        <h2>Add New Task</h2>
+
+        <br>
+
+        <form id="taskForm">
+
+            <label>Task Title</label>
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Enter Task Title"
+                required>
+
+            <br><br>
+
+            <label>Description</label>
+
+            <textarea
+                id="description"
+                placeholder="Enter Task Description"
+                rows="5"></textarea>
+
+            <br><br>
+
+            <label>Due Date</label>
+
+            <input
+                type="date"
+                id="due_date">
+
+            <br><br>
+
+            <label>Priority</label>
+
+            <select id="priority">
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+            </select>
+
+            <br><br>
+
+            <label>Status</label>
+
+            <select id="status">
+                <option>Pending</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+            </select>
+
+            <br><br>
+
+            <button type="submit">
+                <i class="fas fa-save"></i>
+                Save Task
+            </button>
+
+            <button
+                type="button"
+                onclick="window.location.href='dashboard.html'">
+
+                <i class="fas fa-times"></i>
+                Cancel
+
+            </button>
+
+            <p id="taskMessage" style="margin-top:15px;color:green;"></p>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- JavaScript -->
+<script src="script.js"></script>
+
+</body>
+
+</html>

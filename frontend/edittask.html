@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Task | TaskFlow</title>
+
+    <link rel="stylesheet" href="dashboard.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="main">
+
+    <div class="table-section">
+
+        <h2>
+            <i class="fas fa-pen-to-square"></i>
+            Edit Task
+        </h2>
+
+        <br>
+
+        <form id="editTaskForm">
+
+            <!-- Task Title -->
+
+            <label>Task Title</label>
+
+            <input
+                type="text"
+                id="editTitle"
+                placeholder="Enter Task Title"
+                required>
+
+            <br><br>
+
+
+            <!-- Description -->
+
+            <label>Description</label>
+
+            <textarea
+                id="editDescription"
+                placeholder="Enter Task Description"
+                rows="5"></textarea>
+
+            <br><br>
+
+
+            <!-- Due Date -->
+
+            <label>Due Date</label>
+
+            <input
+                type="date"
+                id="editDueDate">
+
+            <br><br>
+
+
+            <!-- Priority -->
+
+            <label>Priority</label>
+
+            <select id="editPriority">
+
+                <option value="High">High</option>
+
+                <option value="Medium">Medium</option>
+
+                <option value="Low">Low</option>
+
+            </select>
+
+            <br><br>
+
+
+            <!-- Status -->
+
+            <label>Status</label>
+
+            <select id="editStatus">
+
+                <option value="Pending">Pending</option>
+
+                <option value="In Progress">In Progress</option>
+
+                <option value="Completed">Completed</option>
+
+            </select>
+
+            <br><br>
+
+
+            <!-- Update -->
+
+            <button type="submit">
+
+                <i class="fas fa-save"></i>
+
+                Update Task
+
+            </button>
+
+
+            <!-- Cancel -->
+
+            <button
+                type="button"
+                onclick="window.location.href='dashboard.html'">
+
+                Cancel
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

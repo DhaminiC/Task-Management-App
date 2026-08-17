@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow | Login</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="card">
+
+        <!-- Logo -->
+        <div class="logo">
+            <i class="fas fa-tasks"></i>
+        </div>
+
+        <!-- Heading -->
+        <h1>TaskFlow</h1>
+
+        <p class="subtitle">
+            Welcome Back! Login to continue.
+        </p>
+
+        <!-- Login Form -->
+        <form id="loginForm">
+
+            <!-- Email -->
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email"
+                       id="loginEmail"
+                       placeholder="Email Address"
+                       required>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password"
+                       id="loginPassword"
+                       placeholder="Password"
+                       required>
+            </div>
+
+            <!-- Options -->
+            <div class="options">
+
+                <label>
+                    <input type="checkbox">
+                    Remember Me
+                </label>
+
+                <a href="#">Forgot Password?</a>
+
+            </div>
+
+            <!-- Error Message -->
+            <p id="loginError" class="error"></p>
+
+            <!-- Login Button -->
+            <button type="submit">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </button>
+
+        </form>
+
+        <!-- Register Link -->
+        <p class="link">
+            Don't have an account?
+            <a href="register.html">Create Account</a>
+        </p>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>

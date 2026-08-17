@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow | Dashboard</title>
+
+    <link rel="stylesheet" href="dashboard.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+
+    <div class="sidebar">
+
+        <h2>TaskFlow</h2>
+
+        <ul>
+
+            <li class="active">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </li>
+
+            <li>
+                <i class="fas fa-tasks"></i>
+                Tasks
+            </li>
+
+            <li>
+                <i class="fas fa-calendar"></i>
+                Calendar
+            </li>
+
+            <li>
+                <i class="fas fa-chart-line"></i>
+                Reports
+            </li>
+
+            <li>
+                <i class="fas fa-cog"></i>
+                Settings
+            </li>
+
+            <li onclick="logout()">
+                <i class="fas fa-right-from-bracket"></i>
+                Logout
+            </li>
+
+        </ul>
+
+    </div>
+
+
+    <!-- Main Content -->
+
+    <div class="main">
+
+        <!-- Top Bar -->
+
+        <div class="topbar">
+
+            <h1>Dashboard</h1>
+
+            <div class="profile">
+
+                <i class="fas fa-bell"></i>
+
+                <span id="userName"></span>
+
+                <img src="https://i.pravatar.cc/45" alt="Profile">
+
+            </div>
+
+        </div>
+
+
+        <!-- Cards -->
+
+        <div class="cards">
+
+            <div class="card">
+
+                <h3>Total Tasks</h3>
+
+                <h2 id="totalTasks">0</h2>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Completed</h3>
+
+                <h2 id="completedTasks">0</h2>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Pending</h3>
+
+                <h2 id="pendingTasks">0</h2>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Overdue</h3>
+
+                <h2 id="overdueTasks">0</h2>
+
+            </div>
+
+        </div>
+
+
+        <!-- Task Table -->
+
+        <div class="table-section">
+
+            <div class="table-header">
+
+                <h2>My Tasks</h2>
+
+                <button onclick="window.location.href='addtask.html'">
+                    <i class="fas fa-plus"></i>
+                    Add Task
+                </button>
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Task</th>
+
+                        <th>Priority</th>
+
+                        <th>Status</th>
+
+                        <th>Due Date</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="taskTableBody">
+
+                    <!-- Tasks will be loaded from MySQL -->
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
