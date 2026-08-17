@@ -33,7 +33,7 @@ if (loginForm) {
 
         try {
 
-            const response = await fetch("http://localhost:5000/login", {
+            const response = await fetch("https://tma-backend.onrender.com/login", {
 
                 method: "POST",
 
@@ -153,7 +153,7 @@ if (registerForm) {
         try {
 
             const response = await fetch(
-                "http://localhost:5000/register",
+                "https://tma-backend.onrender.com/register",
                 {
 
                     method: "POST",
@@ -250,7 +250,7 @@ if (taskForm) {
         try {
 
             const response = await fetch(
-                "http://localhost:5000/add-task",
+                "https://tma-backend.onrender.com/add-task",
                 {
 
                     method: "POST",
@@ -346,7 +346,7 @@ async function loadTasks() {
     try {
 
         const response = await fetch(
-            `http://localhost:5000/tasks/${userId}`
+            `https://tma-backend.onrender.com/tasks/${userId}`
         );
 
 
@@ -580,7 +580,7 @@ async function deleteTask(id) {
     try {
 
         const response = await fetch(
-            `http://localhost:5000/delete-task/${id}`,
+            `https://tma-backend.onrender.com/delete-task/${id}`,
             {
 
                 method: "DELETE"
@@ -672,7 +672,7 @@ async function loadEditTask() {
 
         const response =
             await fetch(
-                `http://localhost:5000/task/${taskId}`
+                `https://tma-backend.onrender.com/task/${taskId}`
             );
 
 
@@ -800,7 +800,7 @@ if (editForm) {
 
                 const response =
                     await fetch(
-                        `http://localhost:5000/update-task/${taskId}`,
+                        `https://tma-backend.onrender.com/update-task/${taskId}`,
                         {
 
                             method: "PUT",
