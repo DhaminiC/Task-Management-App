@@ -1,15 +1,13 @@
-const mysql = require('mysql2/promise');
 require('dotenv').config();
+const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || 14242,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  },
+  ssl: { rejectUnauthorized: false },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -20,6 +18,7 @@ async function initializeDatabase() {
     const connection = await pool.getConnection();
     console.log('Connected to MySQL database via Aiven successfully.');
 
+    // Ensure users table exists
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,6 +29,7 @@ async function initializeDatabase() {
       )
     `);
 
+    // Ensure tasks table exists
     await connection.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,21 +44,28 @@ async function initializeDatabase() {
       )
     `);
 
-    // Ensure columns exist if table was created previously with older schema
-    const alterQueries = [
-      "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id INT",
-      "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date VARCHAR(50)",
-      "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS priority VARCHAR(50) DEFAULT 'Low'",
-      "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending'"
-    ];
-
-    for (const query of alterQueries) {
+    // Add missing columns if tasks table already existed with older schema
+    const checkColumns = async (colName, colDefinition) => {
       try {
-        await connection.query(query);
-      } catch (e) {
-        // Ignore duplicate column errors
+        const [rows] = await connection.query(`
+          SELECT COLUMN_NAME 
+          FROM INFORMATION_SCHEMA.COLUMNS 
+          WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'tasks' AND COLUMN_NAME = ?
+        `, [process.env.DB_NAME, colName]);
+
+        if (rows.length === 0) {
+          await connection.query(`ALTER TABLE tasks ADD COLUMN ${colName} ${colDefinition}`);
+          console.log(`Added column ${colName} to tasks table.`);
+        }
+      } catch (err) {
+        console.warn(`Column check warning for ${colName}:`, err.message);
       }
-    }
+    };
+
+    await checkColumns('user_id', 'INT');
+    await checkColumns('due_date', 'VARCHAR(50)');
+    await checkColumns('priority', "VARCHAR(50) DEFAULT 'Low'");
+    await checkColumns('status', "VARCHAR(50) DEFAULT 'Pending'");
 
     connection.release();
   } catch (err) {
