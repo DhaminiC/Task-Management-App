@@ -97,13 +97,13 @@ app.get('/tasks/:userId', async (req, res) => {
 
   try {
     const [tasks] = await pool.query(
-      'SELECT id, user_id, title, description, DATE_FORMAT(due_date, "%Y-%m-%d") AS due_date, priority, status FROM tasks WHERE user_id = ? ORDER BY id DESC',
+      'SELECT id, user_id, title, description, due_date, priority, status FROM tasks WHERE user_id = ? ORDER BY id DESC',
       [userId]
     );
     res.json(tasks);
   } catch (error) {
     console.error('Fetch tasks error:', error);
-    res.status(500).json({ message: 'Failed to retrieve tasks' });
+    res.status(500).json({ message: 'Failed to retrieve tasks', error: error.message });
   }
 });
 
