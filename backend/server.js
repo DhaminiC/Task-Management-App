@@ -1,457 +1,207 @@
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { pool, initializeDatabase } = require('./db');
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Enable CORS for all incoming requests
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Body Parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-
-// =====================================================
-// MYSQL CONNECTION
-// =====================================================
-
-const db = mysql.createConnection({
-
-    host: "localhost",
-    user: "root",
-    password: "5552",
-    database: "taskflow"
-
+// Health Check Route
+app.get('/', (req, res) => {
+  res.send('TMA Backend API is running!');
 });
 
-
 // =====================================================
-// CONNECT TO MYSQL
+// AUTH / USER ROUTES
 // =====================================================
 
-db.connect((err) => {
+// Register User
+app.post('/register', async (req, res) => {
+  const { fullname, email, password } = req.body;
 
-    if (err) {
+  if (!fullname || !email || !password) {
+    return res.status(400).json({ message: 'Please provide all fields' });
+  }
 
-        console.log("Database Connection Failed");
-        console.log(err);
-
-        return;
+  try {
+    const [existing] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    console.log("✅ MySQL Connected Successfully");
-
-});
-
-
-// =====================================================
-// TEST
-// =====================================================
-
-app.get("/", (req, res) => {
-
-    res.send("TaskFlow Backend Running");
-
-});
-
-
-// =====================================================
-// REGISTER
-// =====================================================
-
-app.post("/register", (req, res) => {
-
-    console.log("Register API Called");
-    console.log(req.body);
-
-    const {
-        fullname,
-        email,
-        password
-    } = req.body;
-
-
-    const sql =
-        "INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)";
-
-
-    db.query(
-        sql,
-        [fullname, email, password],
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-
-                if (err.code === "ER_DUP_ENTRY") {
-
-                    return res.status(409).json({
-                        message: "Email already registered."
-                    });
-
-                }
-
-                return res.status(500).json({
-                    message: "Registration Failed"
-                });
-
-            }
-
-
-            res.json({
-                message: "Registration Successful"
-            });
-
-        }
+    const [result] = await pool.query(
+      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+      [fullname, email, password]
     );
 
+    res.status(201).json({
+      message: 'User registered successfully',
+      userId: result.insertId,
+      fullname
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error registering user' });
+  }
 });
 
+// Login User
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
 
-// =====================================================
-// LOGIN
-// =====================================================
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Please provide email and password' });
+  }
 
-app.post("/login", (req, res) => {
-
-    console.log("Login API Called");
-    console.log(req.body);
-
-    const {
-        email,
-        password
-    } = req.body;
-
-
-    const sql =
-        "SELECT * FROM users WHERE email = ? AND password = ?";
-
-
-    db.query(
-        sql,
-        [email, password],
-        (err, results) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Login Failed"
-                });
-
-            }
-
-
-            if (results.length === 0) {
-
-                return res.status(401).json({
-                    message: "Invalid Email or Password"
-                });
-
-            }
-
-
-            const user = results[0];
-
-
-            res.json({
-
-                message: "Login Successful",
-
-                userId: user.id,
-
-                fullname: user.fullname
-
-            });
-
-        }
+  try {
+    const [users] = await pool.query(
+      'SELECT * FROM users WHERE email = ? AND password = ?',
+      [email, password]
     );
 
+    if (users.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const user = users[0];
+    res.json({
+      message: 'Login successful',
+      userId: user.id,
+      fullname: user.name,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error logging in' });
+  }
 });
 
-
 // =====================================================
-// ADD TASK
+// TASK ROUTES
 // =====================================================
 
-app.post("/add-task", (req, res) => {
+// Get All Tasks for Logged-in User
+app.get('/tasks/:userId', async (req, res) => {
+  const { userId } = req.params;
 
-    console.log("Add Task API Called");
-    console.log(req.body);
+  try {
+    const [tasks] = await pool.query(
+      'SELECT id, user_id, title, description, DATE_FORMAT(due_date, "%Y-%m-%d") AS due_date, priority, status FROM tasks WHERE user_id = ? ORDER BY id DESC',
+      [userId]
+    );
+    res.json(tasks);
+  } catch (error) {
+    console.error('Fetch tasks error:', error);
+    res.status(500).json({ message: 'Failed to retrieve tasks' });
+  }
+});
 
+// Get Single Task by ID
+app.get('/task/:id', async (req, res) => {
+  const { id } = req.params;
 
-    const {
-        title,
-        description,
-        due_date,
-        priority,
-        status,
-        user_id
-    } = req.body;
-
-
-    const sql = `
-
-        INSERT INTO tasks
-        (
-            title,
-            description,
-            due_date,
-            priority,
-            status,
-            user_id
-        )
-
-        VALUES (?, ?, ?, ?, ?, ?)
-
-    `;
-
-
-    db.query(
-        sql,
-        [
-            title,
-            description,
-            due_date,
-            priority,
-            status,
-            user_id
-        ],
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Task Saving Failed"
-                });
-
-            }
-
-
-            console.log("✅ Task Saved Successfully");
-
-
-            res.json({
-                message: "Task Added Successfully"
-            });
-
-        }
+  try {
+    const [tasks] = await pool.query(
+      'SELECT id, user_id, title, description, DATE_FORMAT(due_date, "%Y-%m-%d") AS due_date, priority, status FROM tasks WHERE id = ?',
+      [id]
     );
 
+    if (tasks.length === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json(tasks[0]);
+  } catch (error) {
+    console.error('Fetch single task error:', error);
+    res.status(500).json({ message: 'Failed to retrieve task' });
+  }
 });
 
+// Add New Task
+app.post('/add-task', async (req, res) => {
+  const { user_id, title, description, due_date, priority, status } = req.body;
 
-// =====================================================
-// GET ONLY LOGGED-IN USER'S TASKS
-// =====================================================
+  if (!title || !user_id) {
+    return res.status(400).json({ message: 'Task title and User ID are required' });
+  }
 
-app.get("/tasks/:user_id", (req, res) => {
-
-    console.log("Get User Tasks API Called");
-
-
-    const user_id = req.params.user_id;
-
-
-    const sql = `
-
-        SELECT *
-        FROM tasks
-        WHERE user_id = ?
-        ORDER BY id DESC
-
-    `;
-
-
-    db.query(
-        sql,
-        [user_id],
-        (err, results) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Unable to get tasks"
-                });
-
-            }
-
-
-            res.json(results);
-
-        }
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO tasks (user_id, title, description, due_date, priority, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [user_id, title, description || '', due_date || null, priority || 'Low', status || 'Pending']
     );
 
+    res.status(201).json({
+      message: 'Task created successfully',
+      taskId: result.insertId
+    });
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({ message: 'Failed to create task' });
+  }
 });
 
+// Update Task
+app.put('/update-task/:id', async (req, res) => {
+  const { id } = req.params;
+  const { title, description, due_date, priority, status } = req.body;
 
-// =====================================================
-// GET SINGLE TASK
-// =====================================================
-
-app.get("/task/:id", (req, res) => {
-
-    const taskId = req.params.id;
-
-
-    const sql =
-        "SELECT * FROM tasks WHERE id = ?";
-
-
-    db.query(
-        sql,
-        [taskId],
-        (err, results) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Unable to get task"
-                });
-
-            }
-
-
-            if (results.length === 0) {
-
-                return res.status(404).json({
-                    message: "Task not found"
-                });
-
-            }
-
-
-            res.json(results[0]);
-
-        }
+  try {
+    const [result] = await pool.query(
+      'UPDATE tasks SET title = ?, description = ?, due_date = ?, priority = ?, status = ? WHERE id = ?',
+      [title, description, due_date || null, priority, status, id]
     );
 
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json({ message: 'Task updated successfully' });
+  } catch (error) {
+    console.error('Update task error:', error);
+    res.status(500).json({ message: 'Failed to update task' });
+  }
 });
 
+// Delete Task
+app.delete('/delete-task/:id', async (req, res) => {
+  const { id } = req.params;
 
-// =====================================================
-// UPDATE TASK
-// =====================================================
+  try {
+    const [result] = await pool.query('DELETE FROM tasks WHERE id = ?', [id]);
 
-app.put("/update-task/:id", (req, res) => {
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
 
-    console.log("Update Task API Called");
-
-
-    const taskId = req.params.id;
-
-
-    const {
-        title,
-        description,
-        due_date,
-        priority,
-        status
-    } = req.body;
-
-
-    const sql = `
-
-        UPDATE tasks
-
-        SET
-            title = ?,
-            description = ?,
-            due_date = ?,
-            priority = ?,
-            status = ?
-
-        WHERE id = ?
-
-    `;
-
-
-    db.query(
-        sql,
-        [
-            title,
-            description,
-            due_date,
-            priority,
-            status,
-            taskId
-        ],
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Task Update Failed"
-                });
-
-            }
-
-
-            res.json({
-                message: "Task Updated Successfully"
-            });
-
-        }
-    );
-
+    res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error('Delete task error:', error);
+    res.status(500).json({ message: 'Failed to delete task' });
+  }
 });
 
-
 // =====================================================
-// DELETE TASK
-// =====================================================
-
-app.delete("/delete-task/:id", (req, res) => {
-
-    console.log("Delete Task API Called");
-
-
-    const taskId = req.params.id;
-
-
-    const sql =
-        "DELETE FROM tasks WHERE id = ?";
-
-
-    db.query(
-        sql,
-        [taskId],
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-
-                return res.status(500).json({
-                    message: "Task Delete Failed"
-                });
-
-            }
-
-
-            res.json({
-                message: "Task Deleted Successfully"
-            });
-
-        }
-    );
-
-});
-
-
-// =====================================================
-// START SERVER
+// SERVER INITIALIZATION
 // =====================================================
 
-app.listen(5000, () => {
-
-    console.log("Server running on port 5000");
-
-});
+initializeDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to start server:', err);
+  });
